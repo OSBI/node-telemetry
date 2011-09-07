@@ -1,16 +1,16 @@
-exports = module.exports = Backbone.Model.extend({
+var Backbone = require('backbone');
+var telemetry = exports = module.exports = function(config) {
     /**
      * The inputs that are listening on this server
      */
-    inputs: {},
+    this.inputs = {};
     
     /**
      * Read in configuration and set up inputs
      * @param config
      */
-    initialize: function(args, config) {
-        // Load inputs
-        for (var i in config) {
+    // Load inputs
+    for (var i in config) {
         if (config.hasOwnProperty(i)) {
             this.inputs[i] = _.extend({
                 name: i
@@ -30,29 +30,5 @@ exports = module.exports = Backbone.Model.extend({
                 }
             }
         }
-        }
-        
-        // Ensure that inputs are available in routes
-        _.bindAll(this, "new_event");
-    },
-    
-    /**
-     * Post a new event to the server
-     * @param req
-     * @param res
-     * @param next
-     */
-    new_event: function(req, res, next) {
-        var input = req.params.input;
-        if (this.inputs[input] === undefined) {
-            // Bad input, send 404
-            res.end('', 404);
-            return;
-        }
-        
-        // Send success
-        var data = JSON.parse(req.body.source.replace('castor ', ''));
-        this.inputs[input].trigger('event:new', data);
-        res.end('', 200);
     }
-});
+};

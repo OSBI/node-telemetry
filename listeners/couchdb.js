@@ -1,19 +1,18 @@
-exports = module.exports = Backbone.Model.extend({
-    initialize: function(args, options) {
-        console.log("CouchDB loaded for", options.input.name);
-        _.bindAll(this, "post");
-        options.input.bind('event:new', this.post);
-    },
+var nano = require('nano');
+exports = module.exports = function(config, options) {
+    this.url = function(config) {
+        return "https://" + config.username + ":" + config.password + 
+            "@" + config.host + ":" + config.port;
+    };
+    this.db = nano(this.url(config)).db;
+    this.db.use(config.database);
+    options.input.bind('event:new', this.post);
     
-    post: function(data) {
+    this.post = function(data) {
         console.log("DATA:", data);
-        this.set(data);
-        this.save();
-    },
-    
-    url: function() {
-        return 'https://' + this.get('username') + ':' + this.get('password') +
-            '@' + this.get('host') + ':' + this.get('port') + 
-            '/' + this.get('database');
-    }
-});
+        this.db.insert(data, function(error, http_body, http_headers) {
+            if (error)
+                console.error(error);
+        });
+    };
+};
