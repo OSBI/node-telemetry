@@ -1,6 +1,3 @@
-var Backbone = require('backbone');
-var _ = require('underscore');
-
 exports = module.exports = Backbone.Model.extend({
     /**
      * The inputs that are listening on this server

@@ -1,9 +1,10 @@
 // Import libraries
+global.$ = global.jQuery = require('jquery');
+global._ = require('underscore')._;
+global.Backbone = require('backbone');
 var express = require('express');
-var Backbone = require('backbone');
 var yaml = require('yaml');
 var fs = require('fs');
-global.$ = require('jquery');
 
 // Load listeners
 var listener_files = fs.readdirSync(__dirname + "/listeners");

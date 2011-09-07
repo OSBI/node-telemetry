@@ -1,6 +1,3 @@
-var Backbone = require('backbone');
-var _ = require('underscore');
-
 exports = module.exports = Backbone.Model.extend({
     initialize: function(args, options) {
         console.log("CouchDB loaded for", options.input.name);
