@@ -1,18 +1,22 @@
 var Backbone = require('backbone');
+var _ = require('underscore');
 
-var Event = exports.event = Backbone.Model.extend({
+exports = module.exports = Backbone.Model.extend({
+    initialize: function(args, options) {
+        console.log("CouchDB loaded for", options.input.name);
+        _.bindAll(this, "post");
+        options.input.bind('event:new', this.post);
+    },
+    
+    post: function(data) {
+        console.log("DATA:", data);
+        this.set(data);
+        this.save();
+    },
+    
     url: function() {
-        return 'http://' + this.get('username') + ':' + this.get('password') +
+        return 'https://' + this.get('username') + ':' + this.get('password') +
             '@' + this.get('host') + ':' + this.get('port') + 
             '/' + this.get('database');
-    }
-});
-
-exports.events = Backbone.Collection.extend({
-    model: Event,
-    url: function() {
-        return 'http://' + this.get('username') + ':' + this.get('password') +
-            '@' + this.get('host') + ':' + this.get('port') + 
-            '/' + this.get('database') + '/_all_docs';
     }
 });
