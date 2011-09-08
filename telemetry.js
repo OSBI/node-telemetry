@@ -1,4 +1,3 @@
-var Backbone = require('backbone');
 var telemetry = exports = module.exports = function(config) {
     /**
      * The inputs that are listening on this server
@@ -12,21 +11,19 @@ var telemetry = exports = module.exports = function(config) {
     // Load inputs
     for (var i in config) {
         if (config.hasOwnProperty(i)) {
-            this.inputs[i] = _.extend({
-                name: i
-            }, Backbone.Events);
-            this.inputs[i].listeners = [];
+            this.inputs[i] = [];
             
             // Initialize listeners for this input
             for (var j = 0; j < config[i].length; j++) {
                 try {
-                    var listener = new (global[config[i][j].type])(config[i][j],
-                    {
-                        input: this.inputs[i]
-                    });
-                    this.inputs[i].listeners.push(listener);
+                    var listener_config = config[i][j];
+                    listener_config.input = i;
+                    var listener = new (global[config[i][j].type])(listener_config);
+                    this.inputs[i].push(listener);
+                    console.log(config[i][j].type, "listening for events on " +
+                    		"input called", i);
                 } catch (e) {
-                    console.error("Could not load", config[i][j].type, e.message);
+                    console.error("Could not load", config[i][j].type, "listener [", e.message, "]");
                 }
             }
         }

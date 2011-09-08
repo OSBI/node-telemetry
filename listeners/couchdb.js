@@ -1,13 +1,20 @@
 var nano = require('nano');
-exports = module.exports = function(config, options) {
+exports = module.exports = function(config) {
     this.url = function(config) {
-        return "https://" + config.username + ":" + config.password + 
-            "@" + config.host + ":" + config.port;
+        var url = "https://" + encodeURIComponent(config.username) + ":" + 
+            encodeURIComponent(config.password) + 
+            "@" + encodeURIComponent(config.host);
+        if (config.port) {
+            url += ":" + parseInt(config.port);
+        }
+        return url;
     };
-    this.db = nano(this.url(config)).db;
-    this.db.use(config.database);
-    options.input.bind('event:new', this.post);
+    this.db = nano(this.url(config)).use(config.input);
     
+    /**
+     * Post a message to the telemetry server
+     * Required method
+     */
     this.post = function(data) {
         console.log("DATA:", data);
         this.db.insert(data, function(error, http_body, http_headers) {

@@ -29,8 +29,9 @@ app.post('/input/:input', function(req, res, next) {
     
     // Send success
     var data = JSON.parse(req.body.source.replace('castor ', ''));
-    console.log(telemetry, input);
-    telemetry.inputs[input].trigger('event:new', data);
+    for (var i = 0; i < telemetry.inputs[input].length; i++) {
+        telemetry.inputs[input][i].post(data);
+    }
     res.end('', 200);
 });
 
