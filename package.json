@@ -9,7 +9,7 @@
         "url": "https://thinkjson@github.com/thinkjson/node-telemetry.git"
     },
     "dependencies": {
-        "express": ">= 2.8.0",
+        "express": ">= 2.2.2",
         "yaml": ">= 0.2.2",
         "nano": ">= 0.8.5"
     },
