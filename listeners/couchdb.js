@@ -16,7 +16,6 @@ exports = module.exports = function(config) {
      * Required method
      */
     this.post = function(data) {
-        console.log("DATA:", data);
         this.db.insert(data, function(error, http_body, http_headers) {
             if (error)
                 console.error(error);

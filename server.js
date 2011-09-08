@@ -2,7 +2,6 @@
 var express = require('express');
 var yaml = require('yaml');
 var fs = require('fs');
-global._ = require('underscore')._;
 
 // Load listeners
 var listener_files = fs.readdirSync(__dirname + "/listeners");
@@ -13,7 +12,8 @@ for (var i = 0; i < listener_files.length; i++) {
 }
 
 // Load configuration and inputs
-var config = yaml.eval(fs.readFileSync(__dirname + "/config.yaml", 'utf8'));  //FIXME - this is just for testing. the real file should be in home dir
+var config_loc = process.env.TELEMETRY_CONFIG || __dirname + "/config.yaml";
+var config = yaml.eval(fs.readFileSync(config_loc, 'utf8'));  //FIXME - this is just for testing. the real file should be in home dir
 global.telemetry = new (require(__dirname + '/telemetry'))(config);
 
 // Create the telemetry server and assign inputs
@@ -28,7 +28,7 @@ app.post('/input/:input', function(req, res, next) {
     }
     
     // Send success
-    var data = JSON.parse(req.body.source.replace('castor ', ''));
+    var data = JSON.parse(req.body.source);
     for (var i = 0; i < telemetry.inputs[input].length; i++) {
         telemetry.inputs[input][i].post(data);
     }
