@@ -14,7 +14,7 @@ for (var i = 0; i < listener_files.length; i++) {
 // Load configuration and inputs
 var config_loc = process.env.TELEMETRY_CONFIG || __dirname + "/config.yaml";
 var config = yaml.eval(fs.readFileSync(config_loc, 'utf8'));  //FIXME - this is just for testing. the real file should be in home dir
-global.telemetry = new (require(__dirname + '/telemetry'))(config);
+global.telemetry = new (require(__dirname + '/telemetry.js'))(config);
 
 // Create the telemetry server and assign inputs
 var app = express.createServer();
