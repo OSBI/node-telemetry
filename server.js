@@ -36,4 +36,6 @@ app.post('/input/:input', function(req, res, next) {
 });
 
 // Start the telemetry server
-app.listen(process.argv[2] || 7000);
+var port = process.argv[2] || 7000;
+app.listen(port);
+console.log("Listening on port", port);
