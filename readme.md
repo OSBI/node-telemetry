@@ -24,6 +24,9 @@ TELEMETRY_CONFIG environment variables like so:
 
     export TELEMETRY_CONFIG=~/.telemetry; telemetry
 
+Events can be sent to node-telemetry by any HTTP client capable of a POST. For
+javascript on the browser, you can use [janky.post](https://github.com/pyronicide/janky.post).
+
 If you are interested in creating additional backends for telemetry, or need 
 general assistance, contact me using the e-mail address displayed when you do 
 
