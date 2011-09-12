@@ -26,6 +26,23 @@ TELEMETRY_CONFIG environment variables like so:
 
 Events can be sent to node-telemetry by any HTTP client capable of a POST. For
 javascript on the browser, you can use [janky.post](https://github.com/pyronicide/janky.post).
+Here's an example of what that would look like:
+
+    var data = {
+        level: "log",
+        message: "Invalid identifier: theCheat",
+        lineNumber: 25,
+        file: "strongbad.js"
+    };
+    
+    janky({
+        url: "http://example.com/inputs/errors",
+        method: "post",
+        data: data,
+        error: function() {
+            console.log("Could not reach telemetry server");
+        }
+    });
 
 If you are interested in creating additional backends for telemetry, or need 
 general assistance, contact me using the e-mail address displayed when you do 
