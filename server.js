@@ -27,11 +27,20 @@ app.post('/input/:input', function(req, res, next) {
         return;
     }
     
-    // Send success
-    var data = JSON.parse(req.body.source);
+    // Prepare data
+    var data = {};
+    for (var el in req.body) {
+        if (req.body.hasOwnProperty(el) && el[0] !== "_") {
+            data[el] = unescape(req.body[el]);
+        }
+    }
+    
+    // Notify listeners of new data
     for (var i = 0; i < telemetry.inputs[input].length; i++) {
         telemetry.inputs[input][i].post(data);
     }
+    
+    // Send success
     res.end('', 200);
 });
 
