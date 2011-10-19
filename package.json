@@ -1,12 +1,12 @@
 {
     "name": "telemetry",
     "description": "a simple telemetry server written in Node.js",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "author": "Mark Cahill <mark+npm@thinkjson.com>",
     "keywords": [ "Loggly", "log", "telemetry", "firebug", "firephp" ],
     "repository": {
         "type": "git",
-        "url": "https://thinkjson@github.com/thinkjson/node-telemetry.git"
+        "url": "https://thinkjson@github.com/lifechurch/node-telemetry.git"
     },
     "dependencies": {
         "express": ">= 2.2.2",
