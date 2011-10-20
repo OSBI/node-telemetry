@@ -1,7 +1,7 @@
 {
     "name": "telemetry",
     "description": "a simple telemetry server written in Node.js",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "author": "Mark Cahill <mark+npm@thinkjson.com>",
     "keywords": [ "Loggly", "log", "telemetry", "firebug", "firephp" ],
     "repository": {
