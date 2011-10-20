@@ -4,21 +4,23 @@ exports = module.exports = function(config) {
 	 * Rotate the log
 	 */
 	this.rotateLog = function() {
-		var timestamp = Math.floor((new Date()).getTime() / 1000);
+		var timestamp = (Math.floor((new Date()).getTime() / 1000) + "").substring(5);
+		var seed = Math.floor(Math.random() * 99999);
 		self.oldLogfile = this.logfile;
 		self.oldLog = self.log;
-		self.logfile = self.config.buffer + self.config.input + timestamp + ".csv.part";
+		self.logfile = self.config.buffer + self.config.input + timestamp + seed + ".csv";
 		self.log = fs.createWriteStream(self.logfile);
+		self.log.write(null);
 		
 		// Push log file to archive
 		if (self.oldLog) {
 			self.oldLog.on('close', function() {
-				fs.rename(self.oldLogfile, self.config.archive + self.config.input + timestamp + ".csv", function(err) {
+				fs.rename(self.oldLogfile, self.config.archive + self.config.input + timestamp + seed + ".csv", function(err) {
 					if (! err) fs.unlink(self.oldLogfile);
 				});
 			});
 			
-			self.oldLog.end();
+			self.oldLog.destroySoon();
 		}
 	};
 	
@@ -26,7 +28,7 @@ exports = module.exports = function(config) {
 	var self = this;
 	self.config = config;
 	self.rotateLog();
-	this.interval = config.interval || 3600000;
+	self.interval = config.interval || 3600000;
 	setInterval(function() {
 		self.rotateLog();
 	}, self.interval);
@@ -36,12 +38,12 @@ exports = module.exports = function(config) {
      * Required method
      */
     this.post = function(data) {
-    	// FIXME - pull selected fields out of data and write as CSV row
+    	// Pull selected fields out of data and write as CSV row
     	var row = [];
     	for (field in self.config.fields) {
     		row.push(data[self.config.fields[field]]);
     	}
-    	var raw_data = '"' + row.join('","') + '"\n';
+    	var raw_data = '"' + row.join('","') + '","' + self.count + '"\n';
     	self.log.write(raw_data, "utf8");
     };
 };

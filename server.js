@@ -2,6 +2,7 @@
 var express = require('express');
 var yaml = require('yaml');
 var fs = require('fs');
+var cluster = require('cluster');
 
 // Load listeners
 var listener_files = fs.readdirSync(__dirname + "/listeners");
@@ -19,6 +20,9 @@ global.telemetry = new (require(__dirname + '/telemetry.js'))(config);
 // Create the telemetry server and assign inputs
 var app = express.createServer();
 app.use(express.bodyParser());
+app.get('/', function(req, res, next) {
+	res.end("Telemetry server operational");
+});
 app.post('/input/:input', function(req, res, next) {
     var input = req.params.input;
     if (telemetry.inputs[input] === undefined) {
@@ -45,6 +49,11 @@ app.post('/input/:input', function(req, res, next) {
 });
 
 // Start the telemetry server
-var port = process.argv[2] || 7000;
-app.listen(port);
+var port = process.argv[2] ? parseInt(process.argv[2]) : 7000;
+cluster(app)
+	.use(cluster.logger('logs'))
+	.use(cluster.stats())
+	.use(cluster.pidfiles('pids'))
+	.use(cluster.repl(8888))
+	.listen(port);
 console.log("Listening on port", port);
