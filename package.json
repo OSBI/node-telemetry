@@ -11,7 +11,9 @@
     "dependencies": {
         "express": ">= 2.2.2",
         "yaml": ">= 0.2.2",
-        "nano": ">= 0.8.5"
+        "nano": ">= 0.8.5",
+        "cluster": ">= 0.7.7",
+        "knox": ">= 0.0.9"
     },
     "bin": "./telemetry"
 }        

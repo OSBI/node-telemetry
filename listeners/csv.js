@@ -1,4 +1,5 @@
 var fs = require('fs');
+var knox = require('knox');
 exports = module.exports = function(config) {
 	/**
 	 * Rotate the log
@@ -10,14 +11,33 @@ exports = module.exports = function(config) {
 		self.oldLog = self.log;
 		self.logfile = self.config.buffer + self.config.input + timestamp + seed + ".csv";
 		self.log = fs.createWriteStream(self.logfile);
-		self.log.write(null);
 		
 		// Push log file to archive
 		if (self.oldLog) {
 			self.oldLog.on('close', function() {
-				fs.rename(self.oldLogfile, self.config.archive + self.config.input + timestamp + seed + ".csv", function(err) {
-					if (! err) fs.unlink(self.oldLogfile);
-				});
+				if (self.s3client) {
+					fs.readFile(self.oldLogfile, function(err, buf){
+					    if (err) console.log("Could not open old log file");
+					    if (buf.length > 0) {
+    					    var req = self.s3client.put(self.config.input + timestamp + seed + ".csv", {
+    					        'Content-Length': buf.length
+    					    ,   'Content-Type': 'text/plain'
+    					    });
+    					    req.on('response', function(res){
+    					        if (res.statusCode == 200) {
+    					            fs.unlink(self.oldLogfile);
+    					        } else {
+    					            console.log("Could not save to S3:", res.body);
+    					        }
+    					    });
+    					    req.end(buf);
+					    }
+					});
+				} else if (self.config.archive) {
+					fs.rename(self.oldLogfile, self.config.archive + self.config.input + timestamp + seed + ".csv", function(err) {
+						if (! err) fs.unlink(self.oldLogfile);
+					});
+				}
 			});
 			
 			self.oldLog.destroySoon();
@@ -27,8 +47,15 @@ exports = module.exports = function(config) {
 	if (! config.fields) throw { message: "You must specify the fields to extract from the incoming data" };
 	var self = this;
 	self.config = config;
+	if (config.s3) {
+	    self.s3client = knox.createClient(config.s3);
+	} else if (! config.archive) {
+	    throw { message: "You need to provide either an archive folder or an S3 bucket" };
+	}
+	
+	// Set up log rotation
 	self.rotateLog();
-	self.interval = config.interval || 3600000;
+	self.interval = config.interval || 10000; //3600000;
 	setInterval(function() {
 		self.rotateLog();
 	}, self.interval);
