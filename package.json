@@ -6,7 +6,7 @@
     "keywords": [ "Loggly", "log", "telemetry", "firebug", "firephp" ],
     "repository": {
         "type": "git",
-        "url": "https://thinkjson@github.com/lifechurch/node-telemetry.git"
+        "url": "https://thinkjson@github.com/OSBI/node-telemetry.git"
     },
     "dependencies": {
         "express": ">= 2.2.2",
