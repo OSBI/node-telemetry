@@ -1,19 +1,19 @@
 {
     "name": "telemetry",
-    "description": "a simple telemetry server written in Node.js",
-    "version": "0.0.5",
+    "description": "a massively scalable telemetry server written in Node.js",
+    "version": "0.1.0",
     "author": "Mark Cahill <mark+npm@thinkjson.com>",
-    "keywords": [ "Loggly", "log", "telemetry", "firebug", "firephp" ],
+    "keywords": [ "Loggly", "log", "telemetry", "Hadoop", "Splunk" ],
     "repository": {
         "type": "git",
         "url": "https://thinkjson@github.com/OSBI/node-telemetry.git"
     },
     "dependencies": {
         "express": ">= 2.2.2",
-        "yaml": ">= 0.2.2",
         "nano": ">= 0.8.5",
         "cluster": ">= 0.7.7",
-        "knox": ">= 0.0.9"
+        "knox": ">= 0.0.9",
+        "mocha": ">= 0.10.2"
     },
     "bin": "./telemetry"
 }        

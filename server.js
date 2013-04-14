@@ -1,59 +1,78 @@
-// Import libraries
-var express = require('express');
-var yaml = require('yaml');
-var fs = require('fs');
-var cluster = require('cluster');
+// Import libs
+var cluster = require("cluster"),
+    http = require("http");
+global.helpers = require(__dirname + '/helpers.js');
 
-// Load listeners
-var listener_files = fs.readdirSync(__dirname + "/listeners");
-for (var i = 0; i < listener_files.length; i++) {
-    var listener = listener_files[i];
-    global[listener.replace('.js', '')] = 
-        require(__dirname + "/listeners/" + listener);
+// Get the telemetry server
+process.env.startUp = helpers.ISODateString(new Date());
+var port = process.argv[2] ? parseInt(process.argv[2]) : 80;
+var workerTimeout = process.env.TELEMETRY_WORKER_TIMEOUT || 5000;
+
+// Cluster the server
+var numWorkers = parseInt(process.env.TELEMETRY_WORKERS) || require('os').cpus().length;
+if (process.env.TELEMETRY_USER) {
+    process.setuid(process.env.TELEMETRY_USER);
 }
-
-// Load configuration and inputs
-var config_loc = process.env.TELEMETRY_CONFIG || __dirname + "/config.yaml";
-var config = yaml.eval(fs.readFileSync(config_loc, 'utf8'));
-global.telemetry = new (require(__dirname + '/telemetry.js'))(config);
-
-// Create the telemetry server and assign inputs
-var app = express.createServer();
-app.use(express.bodyParser());
-app.get('/', function(req, res, next) {
-	res.end("Telemetry server operational");
-});
-app.post('/input/:input', function(req, res, next) {
-    var input = req.params.input;
-    if (telemetry.inputs[input] === undefined) {
-        // Bad input, send 404
-        res.end('', 404);
-        return;
-    }
+if (cluster.isMaster) {
     
-    // Prepare data
-    var data = {};
-    for (var el in req.body) {
-        if (req.body.hasOwnProperty(el) && el[0] !== "_") {
-            data[el] = unescape(req.body[el]);
+    // Fork workers
+    process.title = "telemetry-master";
+    process.workers = [];
+    process.workersListening = 0;
+    for (var i = 0; i < numWorkers; i++) {
+        process.workers[i] = cluster.fork();
+    }
+
+    // Restart workers when they die
+    cluster.on('death', function(worker) {
+        process.workers.splice(process.workers.indexOf(worker), 1);
+        if (worker.suicide !== true) { 
+            cluster.fork();
+            console.log("Telemetry worker with PID", worker.pid, "died. Respawning.");
         }
-    }
+    });
     
-    // Notify listeners of new data
-    for (var i = 0; i < telemetry.inputs[input].length; i++) {
-        telemetry.inputs[input][i].post(data);
-    }
+    // Do a graceful restart of workers
+    process.on('SIGUSR2', function (){
+        var workerLength = process.workers.length;
+        for (var i = 0; i < workerLength; i++) {
+            process.workers[i].suicide = true;
+            process.workers[i].send({ cmd: "shutdown" });
+            process.workers[i]._channel.close();
+        }
+        
+        for (var j = 0; j < workerLength; j++) {
+            process.workers.push(cluster.fork());
+        }
+    });
     
-    // Send success
-    res.end('', 200);
-});
-
-// Start the telemetry server
-var port = process.argv[2] ? parseInt(process.argv[2]) : 7000;
-cluster(app)
-	.use(cluster.logger('logs'))
-	.use(cluster.stats())
-	.use(cluster.pidfiles('pids'))
-	.use(cluster.repl(8888))
-	.listen(port);
-console.log("Listening on port", port);
+    // Pull a shakespeare
+    process.on('SIGTERM', function() {
+        process.workers.forEach(function(worker) {
+            worker.kill();
+        });
+        process.exit(0);
+    });
+    
+    console.log("Telemetry master with PID", process.pid, "listening on port", port);
+} else {
+    // Start server on worker
+    var app = require(__dirname + '/app').listen(port);
+    process.title = "telemetry-worker";
+    console.log("Telemetry worker with PID", process.pid, "operational");
+    
+    // Listen for shutdown signal
+    process.on('message', function(msg) {
+        if (msg.cmd && msg.cmd == "shutdown") {
+            app.on('close', function() {
+                console.log("Shutting down telemetry worker with PID", process.pid);
+                setTimeout(function() {
+                    process.exit(0);
+                }, workerTimeout);
+            });
+            app.close();
+            
+            process.title = "telemetry-worker-defunct";
+        }
+    });
+}
