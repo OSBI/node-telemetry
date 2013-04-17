@@ -1,28 +1,41 @@
+# Node-telemetry
+
 The goal of node-telemetry is to make it really easy to deploy a scalable telemetry
-server for small projects. This can be used to capture errors, performance data,
-and more, and store it in a document store or on the filesystem.
+server in a clustered environment. This can be used to capture errors, performance data,
+and more from your web and mobile applications, and store it in a document store 
+or on the filesystem.
+
+## Getting started
 
 To install telemetry, run
 
     npm install -g telemetry
 
-then edit your config.yaml, and run telemetry:
+then edit your config.js, and run telemetry:
 
-    telemetry
+    telemetry [port]
 
-An example config.yaml is provided below:
+An example config.js is provided below (note that all keys are case-sensitive):
 
-    errors:
-      -
-        type: couchdb
-        host: user.cloudant.com
-        username: user
-        password: password
+	var couch = {
+	    type: 'couchdb',
+	    host: 'localhost',
+	    port: 5984,
+	    protocol: "http",
+	    username: 'admin',
+	    password: 'password'
+	};
+	
+	exports.inputs = {
+	    test: [ couch ]
+	};
 
 You may place this in the same directory as telemetry, or pass it via the 
 TELEMETRY_CONFIG environment variables like so:
 
-    export TELEMETRY_CONFIG=~/.telemetry; telemetry
+    export TELEMETRY_CONFIG=~/.telemetry; telemetry [port]
+
+## Sending data
 
 Events can be sent to node-telemetry by any HTTP client capable of a POST. For
 javascript on the browser, you can use [janky.post](https://github.com/pyronicide/janky.post).
@@ -44,12 +57,43 @@ Here's an example of what that would look like:
         }
     });
 
-If you are interested in creating additional backends for telemetry, or need 
-general assistance, contact me using the e-mail address displayed when you do 
+A cURL example:
+
+	$ curl -X POST -d @document -v http://localhost:8000/input/test
+	* About to connect() to localhost port 8000 (#0)
+	*   Trying 127.0.0.1... connected
+	* Connected to localhost (127.0.0.1) port 8000 (#0)
+	> POST /input/test HTTP/1.1
+	> User-Agent: curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 OpenSSL/0.9.8r zlib/1.2.3
+	> Host: localhost:8000
+	> Accept: */*
+	> Content-Length: 34
+	> Content-Type: application/x-www-form-urlencoded
+	> 
+	< HTTP/1.1 200 OK
+	< x-powered-by: Express
+	< content-type: text/html; charset=utf-8
+	< content-length: 0
+	< connection: close
+	< 
+	* Closing connection #0
+
+## Additional documentation
+
+Additional documentation is available under /docs:
+
+- [Deployment](node-telemetry/blob/master/docs/deployment.md)
+- [Sending data](node-telemetry/blob/master/docs/sending_data.md)
+
+If you find the documentation lacking, are interested in creating 
+additional backends for telemetry, or need general assistance, contact us 
+using the e-mail address displayed when you do 
 
     npm author ls telemetry
 
-node-telemetry is released under the terms of the MIT license.
+## Licensing
+
+node-telemetry is released under the terms of the _MIT license_.
 
 Copyright (c) 2011 Mark Cahill
 
