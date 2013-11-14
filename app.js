@@ -34,11 +34,12 @@ try {
     };
 } catch (e) {}
 var app = options === undefined ? 
-        require('express').createServer() : 
-        require('express').createServer(options);
+        express() : 
+        express(options);
 var bodyParser = express.bodyParser();
 
 // Properly handle errors
+/*
 app.error(function(err, req, res, next) {
     if (err instanceof SyntaxError) {
         res.send({ error: 'Could not parse data' }, 415);
@@ -46,7 +47,7 @@ app.error(function(err, req, res, next) {
         res.send({ error: 'Internal Server Error' }, 500);
     }
 });
-
+*/
 // Status page
 app.all('/', function(req, res, next) {
     telemetry.get_status(req, res, next);

@@ -3,3 +3,4 @@ config.yaml
 .settings
 archive
 buffer
+node_modules
